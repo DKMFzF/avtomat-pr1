@@ -18,6 +18,10 @@
 ```bash
 1. git clone https://github.com/DKMFzF/avtomat-pr1.git 
 
-2. cd avtomat-pr1
+2. cd avtomat-pr1/src
 
 3. java Main.java
+
+альтернативный запуск (если есть утилита make)
+
+1. make
