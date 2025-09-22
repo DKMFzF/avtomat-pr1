@@ -26,27 +26,15 @@ class DFA {
     }
 
     public boolean accepts(String inputChain) {
-        if (inputChain.isEmpty()) {
-            return true;
-        }
-        
-        String firstChar = null;
-        String lastChar = null;
-
-        for (char c : inputChain.toCharArray()) {
-            String symbol = String.valueOf(c);
-            String key = firstChar + "," + lastChar;
-            
-            if (!transitions.containsKey(key) || !transitions.get(key).containsKey(symbol)) {
-                return false;
-            }
-
-            String[] nextState = transitions.get(key).get(symbol);
-            firstChar = nextState[0];
-            lastChar = nextState[1];
+        int n = inputChain.length();
+        if (n < 2) {
+            return false;
         }
 
-        return Objects.equals(firstChar, lastChar);
+        String firstTwo = inputChain.substring(0, 2);
+        String lastTwo = inputChain.substring(n - 2);
+
+        return firstTwo.equals(lastTwo);
     }
 }
 
@@ -79,23 +67,16 @@ class NFA {
     }
 
     public boolean accepts(String inputChain) {
-        Set<Integer> states = new HashSet<>(currentStates);
+        Deque<Character> window = new ArrayDeque<>();
         
         for (char c : inputChain.toCharArray()) {
-            Set<Integer> nextStates = new HashSet<>();
-            String symbol = String.valueOf(c);
-            
-            for (int state : states) {
-                if (transitions.get(state).containsKey(symbol)) {
-                    nextStates.addAll(transitions.get(state).get(symbol));
-                }
+            if (window.size() == windowSize) {
+                window.pollFirst();
             }
-            
-            states = nextStates;
-            if (states.isEmpty()) break;
+            window.addLast(c);
         }
         
-        return states.contains(windowSize);
+        return window.contains('1');
     }
 }
 
@@ -104,14 +85,21 @@ public class Main {
         DFA dfa = new DFA();
         NFA nfa = new NFA();
 
-        String[] testDfa = {"0", "00", "01", "101", "110", "111"};
+        String[] testDfa = {
+            "00", "01", "10", "11", "0000", "00100", // true
+            "0", "1", "0001", "0110", "110000", // false
+            "0", "00", "01", "101", "110", "111"
+        };
         System.out.println("DFA results:");
         for (String chain : testDfa) {
             boolean result = dfa.accepts(chain);
             System.out.printf(" %s -> %s%n", chain, result ? "ACCEPT" : "REJECT");
         }
 
-        String[] testNfa = {"00000", "00001", "00100", "00010", "11111", "00000"};
+        String[] testNfa = {
+            "1", "01", "00001", "101000", "11111", "0001000", "1010101", "000001", // true
+            "0", "00", "00000", "100000", "1100000" // false
+        };
         System.out.println("\nNFA results:");
         for (String chain : testNfa) {
             boolean result = nfa.accepts(chain);
